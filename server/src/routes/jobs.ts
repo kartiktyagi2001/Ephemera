@@ -4,19 +4,19 @@ import { BackendClient } from '../lib/backend'
 
 type Bindings = {
   DATABASE_URL: string
-  BACKEND_API_URL: string  
+  DOCKER_API_URL: string  
   BACKEND_SECRET: string
 }
 
 export const jobRoutes = new Hono<{ Bindings: Bindings }>()
 
-// POST /api/v1/jobs - Create new job
+// create new job - /api/v1/jobs
 jobRoutes.post('/', async (c) => {
   try {
     const prisma = createPrismaClient(c.env.DATABASE_URL)
-    const backend = new BackendClient(c.env.BACKEND_API_URL, c.env.BACKEND_SECRET)
+    const backend = new BackendClient(c.env.DOCKER_API_URL, c.env.BACKEND_SECRET)
     
-    // Parse multipart form data
+    // parse multipart form data
     const formData = await c.req.formData()
     const file = formData.get('file') as File
     const preset = formData.get('preset') as string || 'default'
@@ -26,15 +26,15 @@ jobRoutes.post('/', async (c) => {
       return c.json({ error: 'File is required' }, 400)
     }
 
-    // Validate file size (5MB limit for edge)
-    const MAX_SIZE = 5 * 1024 * 1024 // 5MB
+    //validate file size (10MB limit for now)
+    const MAX_SIZE = 10 * 1024 * 1024 // 5MB
     if (file.size > MAX_SIZE) {
       return c.json({ 
-        error: 'File too large. Maximum size is 5MB' 
+        error: 'File too large. Maximum size is 10MB' 
       }, 413)
     }
 
-    // Validate file type
+    //validate file type
     const allowedTypes = ['text/csv', 'application/json']
     if (!allowedTypes.includes(file.type)) {
       return c.json({ 
@@ -103,7 +103,7 @@ jobRoutes.post('/', async (c) => {
   }
 })
 
-// GET /api/v1/jobs/:jobId - Get job status
+// get job status - /api/v1/jobs/:jobId
 jobRoutes.get('/:jobId', async (c) => {
   try {
     const jobId = c.req.param('jobId')
@@ -139,12 +139,12 @@ jobRoutes.get('/:jobId', async (c) => {
   }
 })
 
-// GET /api/v1/jobs/:jobId/download - Download processed file
+// download processed file - /api/v1/jobs/:jobId/download
 jobRoutes.get('/:jobId/download', async (c) => {
   try {
     const jobId = c.req.param('jobId')
     const prisma = createPrismaClient(c.env.DATABASE_URL)
-    const backend = new BackendClient(c.env.BACKEND_API_URL, c.env.BACKEND_SECRET)
+    const backend = new BackendClient(c.env.DOCKER_API_URL, c.env.BACKEND_SECRET)
     
     const job = await prisma.job.findUnique({
       where: { id: jobId }
@@ -161,7 +161,7 @@ jobRoutes.get('/:jobId/download', async (c) => {
       }, 400)
     }
 
-    // Stream file from backend
+    // stream file from container server
     const response = await backend.getJobOutput(jobId)
     
     return new Response(response.body, {
@@ -177,12 +177,12 @@ jobRoutes.get('/:jobId/download', async (c) => {
   }
 })
 
-// DELETE /api/v1/jobs/:jobId - Delete job (admin)
+// delete job (admin) ()
 jobRoutes.delete('/:jobId', async (c) => {
   try {
     const jobId = c.req.param('jobId')
     const prisma = createPrismaClient(c.env.DATABASE_URL)
-    const backend = new BackendClient(c.env.BACKEND_API_URL, c.env.BACKEND_SECRET)
+    const backend = new BackendClient(c.env.DOCKER_API_URL, c.env.BACKEND_SECRET)
     
     // Delete from backend first
     await backend.deleteJob(jobId)

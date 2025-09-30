@@ -7,9 +7,10 @@
   //   "nodejs_compat"
   // ],
   "vars": {
-    "DATABASE_URL":"postgresql://neondb_owner:npg_xCVyqso8Ynw0@ep-cold-shadow-a1iedkwc-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require",
+    "DATABASE_URL":"prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza19iSFJVaGxWQzJVSHVQb28zSFNueHEiLCJhcGlfa2V5IjoiMDFLNkNSUE1FMlBIQVhaUDIwMEVLMktaMFYiLCJ0ZW5hbnRfaWQiOiI4NmU2YWQyOGQzMzQxZWVkYTM4NzlkOWE4NTc3MDM5NjkwZjBhYmRiMTU1MjFhYmZlYTU3ZTI5NWFkYTJlOWY3IiwiaW50ZXJuYWxfc2VjcmV0IjoiNjVlODNmY2ItNTRjNS00M2M0LWJlYWUtYjEyYzNkMDQzZTZhIn0.DJM4Innm0QeKrGK0BlfkchOVhs2FBxURo13boNmFnEw",
     "secret": "duckduckduck",
-    "DOCK_BACKEND_URL": ""
+    "CONTAINER_API_URL": "",
+    "BACKEND_API_URL":"http://localhost:8787",
   },
   // "kv_namespaces": [
   //   {

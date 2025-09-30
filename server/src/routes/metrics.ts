@@ -11,7 +11,7 @@ metricsRoutes.get('/', async (c) => {
   try {
     const prisma = createPrismaClient(c.env.DATABASE_URL)
     
-    // Get job statistics
+    // get job statistics
     const [totalJobs, successfulJobs, failedJobs, avgDuration] = await Promise.all([
       prisma.job.count(),
       prisma.job.count({ where: { status: 'done' } }),

@@ -15,21 +15,21 @@ const app = new Hono<{ Bindings: Bindings }>()
 // Middleware
 app.use('*', logger())
 app.use('*', cors({
-  origin: ['http://localhost:3000', 'https://yourdomain.com'],
+  origin: ['http://localhost:3000'],
   allowMethods: ['GET', 'POST', 'DELETE'],
   allowHeaders: ['Content-Type', 'Authorization']
 }))
 
-// Health check
+// health
 app.get('/', (c) => c.json({ 
-  message: 'DataVault Edge API', 
+  message: 'Ephemera API', 
   version: '1.0.0',
   timestamp: new Date().toISOString()
 }))
 
-// Routes
+// routes
 app.route('/api/v1/jobs', jobRoutes)
-app.route('/api/v1/metrics', metricsRoutes)
+app.route('/api/v1/metrics', metricsRoutes) //to show metrics on home screen
 
 export default app
 export type AppType = typeof app
