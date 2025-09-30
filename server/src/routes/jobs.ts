@@ -4,7 +4,7 @@ import { BackendClient } from '../lib/backend'
 
 type Bindings = {
   DATABASE_URL: string
-  DOCKER_API_URL: string  
+  CONTAINER_API_URL: string  
   BACKEND_SECRET: string
 }
 
@@ -14,7 +14,7 @@ export const jobRoutes = new Hono<{ Bindings: Bindings }>()
 jobRoutes.post('/', async (c) => {
   try {
     const prisma = createPrismaClient(c.env.DATABASE_URL)
-    const backend = new BackendClient(c.env.DOCKER_API_URL, c.env.BACKEND_SECRET)
+    const backend = new BackendClient(c.env.CONTAINER_API_URL, c.env.BACKEND_SECRET)
     
     // parse multipart form data
     const formData = await c.req.formData()
@@ -27,7 +27,7 @@ jobRoutes.post('/', async (c) => {
     }
 
     //validate file size (10MB limit for now)
-    const MAX_SIZE = 10 * 1024 * 1024 // 5MB
+    const MAX_SIZE = 10 * 1024 * 1024 // 10MB
     if (file.size > MAX_SIZE) {
       return c.json({ 
         error: 'File too large. Maximum size is 10MB' 
@@ -72,7 +72,7 @@ jobRoutes.post('/', async (c) => {
         durationMs: backendResponse.durationMs,
         errorMessage: backendResponse.errorMessage,
         startedAt: backendResponse.status === 'queued' ? new Date() : undefined,
-        finishedAt: ['done', 'failed'].includes(backendResponse.status) ? new Date() : undefined
+        finishedAt: ['completed', 'failed'].includes(backendResponse.status) ? new Date() : undefined
       }
     })
 
@@ -144,7 +144,7 @@ jobRoutes.get('/:jobId/download', async (c) => {
   try {
     const jobId = c.req.param('jobId')
     const prisma = createPrismaClient(c.env.DATABASE_URL)
-    const backend = new BackendClient(c.env.DOCKER_API_URL, c.env.BACKEND_SECRET)
+    const backend = new BackendClient(c.env.CONTAINER_API_URL, c.env.BACKEND_SECRET)
     
     const job = await prisma.job.findUnique({
       where: { id: jobId }
@@ -154,8 +154,8 @@ jobRoutes.get('/:jobId/download', async (c) => {
       return c.json({ error: 'Job not found' }, 404)
     }
     
-    if (job.status !== 'done') {
-      return c.json({ 
+    if (job.status !== 'completed') {
+      return c.json({
         error: 'Job not completed',
         status: job.status 
       }, 400)
@@ -182,7 +182,7 @@ jobRoutes.delete('/:jobId', async (c) => {
   try {
     const jobId = c.req.param('jobId')
     const prisma = createPrismaClient(c.env.DATABASE_URL)
-    const backend = new BackendClient(c.env.DOCKER_API_URL, c.env.BACKEND_SECRET)
+    const backend = new BackendClient(c.env.CONTAINER_API_URL, c.env.BACKEND_SECRET)
     
     // Delete from backend first
     await backend.deleteJob(jobId)
@@ -192,7 +192,7 @@ jobRoutes.delete('/:jobId', async (c) => {
       where: { id: jobId }
     })
     
-    return c.json({ message: 'Job deleted successfully' })
+    return c.json({ message: 'Job deleted completedly' })
     
   } catch (error) {
     console.error('Job deletion error:', error)
