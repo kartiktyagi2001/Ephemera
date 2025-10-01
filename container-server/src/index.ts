@@ -45,13 +45,16 @@ app.get('/health', (req: Request, res: Response) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Container server listening on port ${port}`);
-  console.log(`Temporary directory: ${path.resolve(TEMP_DIR)}`);
-});
-
+app.use('/v1/jobs', jobRoutes);
+app.use('/v1/jobs', outputRoutes);
+app.use('/v1/jobs', deleteRoutes);
 
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Unhandled error:', err);
   res.status(500).json({ error: 'Internal server error', message: err.message });
+});
+
+app.listen(port, () => {
+  console.log(`Container server listening on port ${port}`);
+  console.log(`Temporary directory: ${path.resolve(TEMP_DIR)}`);
 });
