@@ -1,0 +1,34 @@
+--- Dependencies ---
+node_modules/
+
+--- Compiled TypeScript ---
+dist/
+build/
+out/
+
+TypeScript build info file, used for incremental compilation.
+.tsbuildinfo
+
+Compiled JavaScript files and source maps
+*.js
+*.js.map
+
+--- Environment Variables ---
+.env
+.env.local
+.env.development.local
+.env.production.local
+.env.test.local
+.env.*
+
+The ! makes git NOT ignore this specific file.
+!.env.example
+
+--- Logs ---
+Log files are generated during runtime and should not be version controlled.
+logs/
+.log
+npm-debug.log
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
