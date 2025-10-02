@@ -43,6 +43,8 @@ function Authenticate(req: Request, res: Response, next: NextFunction){
     if(auth !== `Bearer ${BACKEND_SECRET}`){
         return res.status(403).json({error: "Imposters not allowed. No! No!"})
     }
+
+    next()
 }
 
 async function GetFile(req: Request, res: Response, next: NextFunction){
@@ -85,9 +87,16 @@ async function GetFile(req: Request, res: Response, next: NextFunction){
     });
 
     //uploaded file go into container
-    const inputStream = await fs.readFile(file.path)
-    docker.stdin.write(inputStream)
-    docker.stdin.end();
+    try {
+      const inputStream = await fs.readFile(file.path)
+      docker.stdin.write(inputStream)
+      docker.stdin.end()
+    } catch (error) {
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Failed to read input file' })
+      }
+      return
+    }
 
     //closing response manually
     docker.on('close', async(code)=>{
