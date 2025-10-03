@@ -3,6 +3,7 @@ import {Router} from 'express'
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs/promises';
+import { createWriteStream } from 'fs';
 import { spawn } from 'child_process';
 import { v4 as uuid } from 'uuid';
 
@@ -56,13 +57,19 @@ async function GetFile(req: Request, res: Response, next: NextFunction){
         return res.status(400).json({error: "No file uploaded!"})
     }
 
-    //setting response header
-    res.setHeader('Content-Type', file.mimetype)    //download type
-
-    res.setHeader(
-      'Content-Disposition',
-      `attachment; filename="anonymized${path.extname(file.originalname)}"`
-    );  //download file name
+    // prepare output target on disk; edge server will download via /v1/jobs/:jobId/output
+    const isJson = file.mimetype.includes('json') || path.extname(file.originalname).toLowerCase() === '.json'
+    const outputFile = path.join(path.dirname(file.path), isJson ? 'output.json' : 'output.csv')
+    const outputStream = createWriteStream(outputFile)
+    const startedAt = Date.now()
+    let writtenBytes = 0
+    outputStream.on('drain', () => {})
+    outputStream.on('error', (err) => {
+      console.error('Failed writing output for job', jobId, err)
+      if (!res.headersSent) {
+        res.status(500).json({ status: 'failed', error: 'Failed to write output file' })
+      }
+    })
 
     //secure ephemeral container :)
     const docker = spawn('docker', [
@@ -77,8 +84,15 @@ async function GetFile(req: Request, res: Response, next: NextFunction){
         'datavault/processor:latest'    //image to create container
     ]);
 
-    //o/p collection
-    docker.stdout.pipe(res, { end: false });    //after sending data, donot auto-end connection.
+    // collect output into file
+    docker.stdout.on('data', (chunk) => {
+      writtenBytes += Buffer.byteLength(chunk)
+      const ok = outputStream.write(chunk)
+      if (!ok) {
+        docker.stdout.pause()
+        outputStream.once('drain', () => docker.stdout.resume())
+      }
+    })
 
     //err output
     let errorOutput = '';
@@ -100,14 +114,24 @@ async function GetFile(req: Request, res: Response, next: NextFunction){
 
     //closing response manually
     docker.on('close', async(code)=>{
+        try{ outputStream.end() } catch(_) {}
         if(code !== 0){
-            res.write(JSON.stringify({
-                error: 'Processing error',
-                details: errorOutput || `Exited with code ${code}`
-            }));
+            if (!res.headersSent) {
+              return res.status(500).json({ status: 'failed', error: 'Processing error', details: errorOutput || `Exited with code ${code}` })
+            } else {
+              return
+            }
         }
 
-        res.end();
+        const durationMs = Date.now() - startedAt
+        if (!res.headersSent) {
+          res.status(200).json({
+            status: 'completed',
+            downloadUrl: `/v1/jobs/${jobId}/output`,
+            outputSize: writtenBytes,
+            durationMs
+          })
+        }
 
         //job dir removal after job is done
         try{

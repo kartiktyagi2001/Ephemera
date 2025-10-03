@@ -26,7 +26,7 @@ app.use(express.json());
 
 const { PORT, BACKEND_SECRET, TEMP_DIR } = process.env;
 
-//test log
+//
 if (!PORT) throw new Error('Missing PORT in .env');
 if (!BACKEND_SECRET) throw new Error('Missing BACKEND_SECRET in .env');
 if (!TEMP_DIR) throw new Error('Missing TEMP_DIR in .env');

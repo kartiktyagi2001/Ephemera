@@ -22,7 +22,7 @@ app.use('*', cors({
 
 // health
 app.get('/', (c) => c.json({ 
-  message: 'Ephemera API', 
+  message: 'Ephemera Edge-Server API',
   version: '1.0.0',
   timestamp: new Date().toISOString()
 }))

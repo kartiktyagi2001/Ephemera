@@ -8,8 +8,8 @@
   // ],
   "vars": {
     "DATABASE_URL":"prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqd3RfaWQiOjEsInNlY3VyZV9rZXkiOiJza19iSFJVaGxWQzJVSHVQb28zSFNueHEiLCJhcGlfa2V5IjoiMDFLNkNSUE1FMlBIQVhaUDIwMEVLMktaMFYiLCJ0ZW5hbnRfaWQiOiI4NmU2YWQyOGQzMzQxZWVkYTM4NzlkOWE4NTc3MDM5NjkwZjBhYmRiMTU1MjFhYmZlYTU3ZTI5NWFkYTJlOWY3IiwiaW50ZXJuYWxfc2VjcmV0IjoiNjVlODNmY2ItNTRjNS00M2M0LWJlYWUtYjEyYzNkMDQzZTZhIn0.DJM4Innm0QeKrGK0BlfkchOVhs2FBxURo13boNmFnEw",
-    "secret": "duckduckduck",
-    "CONTAINER_API_URL": "",
+    "BACKEND_SCERET":"duckduckduck",
+    "CONTAINER_API_URL": "http://localhost:8080",
     "BACKEND_API_URL":"http://localhost:8787",
   },
   // "kv_namespaces": [

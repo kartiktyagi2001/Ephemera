@@ -54,13 +54,22 @@ jobRoutes.post('/', async (c) => {
     })
 
     // Forward to backend
-    const backendResponse = await backend.createJob({
-      file,
-      preset,
-      fileType: file.type,
-      originalName: file.name,
-      sync
-    })
+    let backendResponse;
+    try {
+      backendResponse = await backend.createJob({
+        file,
+        preset,
+        fileType: file.type,
+        originalName: file.name,
+        sync,
+      });
+    } catch (err: any) {
+      console.error('Error creating job on container server:', err);
+      return c.json({
+        error: 'Failed to create job',
+        message: err.message || 'Unknown error',
+      }, 502);
+    }
 
     // Update job with backend response
     await prisma.job.update({

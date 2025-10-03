@@ -1,3 +1,5 @@
+import { v4 as uuid } from 'uuid';
+
 export interface BackendJobRequest {
   file?: File
   preset?: string
@@ -22,6 +24,9 @@ export class BackendClient {
   ) {}
 
   async createJob(data: BackendJobRequest): Promise<BackendJobResponse> {
+
+    const jobId = uuid();
+
     const formData = new FormData()
     
     if (data.file) {
@@ -43,7 +48,8 @@ export class BackendClient {
     const response = await fetch(`${this.baseUrl}/v1/jobs`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${this.secret}`
+        'Authorization': `Bearer ${this.secret}`,
+        'jobId': jobId
       },
       body: formData
     })
@@ -52,7 +58,8 @@ export class BackendClient {
       throw new Error(`Backend API error: ${response.status}`)
     }
 
-    return response.json() as Promise<BackendJobResponse>
+    const backendResult = await response.json() as Omit<BackendJobResponse, 'jobId'>;
+    return { jobId, ...backendResult };
   }
 
   async getJob(jobId: string): Promise<BackendJobResponse> {

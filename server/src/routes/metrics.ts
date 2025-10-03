@@ -14,11 +14,11 @@ metricsRoutes.get('/', async (c) => {
     // get job statistics
     const [totalJobs, successfulJobs, failedJobs, avgDuration] = await Promise.all([
       prisma.job.count(),
-      prisma.job.count({ where: { status: 'done' } }),
+      prisma.job.count({ where: { status: 'completed' } }),
       prisma.job.count({ where: { status: 'failed' } }),
       prisma.job.aggregate({
         where: { 
-          status: 'done',
+          status: 'completed',
           durationMs: { not: null }
         },
         _avg: { durationMs: true }
